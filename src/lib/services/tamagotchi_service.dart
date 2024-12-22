@@ -1,7 +1,7 @@
 import 'package:stacked/stacked.dart';
 import 'package:my_app/models/tamagotchi.dart';
 
-class TamagotchiService {
+class TamagotchiService extends BaseViewModel {
   Tamagotchi? _currentTamagotchi;
 
   Tamagotchi? get currentTamagotchi => _currentTamagotchi;
