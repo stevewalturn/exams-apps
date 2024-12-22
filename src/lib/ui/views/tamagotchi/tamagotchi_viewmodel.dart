@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:my_app/app/app.locator.dart';
 import 'package:my_app/app/app.router.dart';
 import 'package:my_app/services/tamagotchi_service.dart';
@@ -8,6 +9,7 @@ class TamagotchiViewModel extends BaseViewModel {
   final _tamagotchiService = locator<TamagotchiService>();
   final _dialogService = locator<DialogService>();
   final _navigationService = locator<NavigationService>();
+  Timer? _updateTimer;
 
   bool get hasTamagotchi => _tamagotchiService.hasTamagotchi;
   String? get tamagotchiName => _tamagotchiService.currentTamagotchi?.name;
@@ -20,35 +22,71 @@ class TamagotchiViewModel extends BaseViewModel {
   bool get isHungry => _tamagotchiService.currentTamagotchi?.isHungry ?? false;
   bool get isTired => _tamagotchiService.currentTamagotchi?.isTired ?? false;
 
+  @override
+  void dispose() {
+    cancelPeriodicUpdate();
+    super.dispose();
+  }
+
   void initialize() {
-    if (!hasTamagotchi) {
-      createNewTamagotchi();
+    setBusy(true);
+    try {
+      if (!hasTamagotchi) {
+        createNewTamagotchi();
+      }
+      startPeriodicUpdate();
+    } catch (e) {
+      _dialogService.showDialog(
+        title: 'Error',
+        description: 'Failed to initialize Tamagotchi: ${e.toString()}',
+      );
+    } finally {
+      setBusy(false);
     }
-    startPeriodicUpdate();
   }
 
   void startPeriodicUpdate() {
-    // Update stats every minute
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(minutes: 1));
-      if (hasTamagotchi) {
-        _tamagotchiService.updateStats();
-        notifyListeners();
-        return true;
-      }
-      return false;
-    });
+    cancelPeriodicUpdate();
+    _updateTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) {
+        if (hasTamagotchi) {
+          try {
+            _tamagotchiService.updateStats();
+            notifyListeners();
+          } catch (e) {
+            _dialogService.showDialog(
+              title: 'Update Error',
+              description: 'Failed to update Tamagotchi stats: ${e.toString()}',
+            );
+          }
+        }
+      },
+    );
+  }
+
+  void cancelPeriodicUpdate() {
+    _updateTimer?.cancel();
+    _updateTimer = null;
   }
 
   Future<void> createNewTamagotchi() async {
-    final response = await _dialogService.showCustomDialog(
-      variant: 'nameTamagotchi',
-    );
+    try {
+      final response = await _dialogService.showCustomDialog(
+        variant: 'nameTamagotchi',
+      );
 
-    if (response?.confirmed ?? false) {
-      notifyListeners();
-      await _navigationService.replaceWithTamagotchiView();
-    } else {
+      if (response?.confirmed ?? false) {
+        notifyListeners();
+        await _navigationService.replaceWithTamagotchiView();
+      } else {
+        await _navigationService.replaceWithHomeView();
+      }
+    } catch (e) {
+      await _dialogService.showDialog(
+        title: 'Error',
+        description: 'Failed to create new Tamagotchi: ${e.toString()}',
+      );
       await _navigationService.replaceWithHomeView();
     }
   }
@@ -60,7 +98,7 @@ class TamagotchiViewModel extends BaseViewModel {
     } catch (e) {
       _dialogService.showDialog(
         title: 'Error',
-        description: 'Unable to feed your Tamagotchi. Please try again.',
+        description: 'Unable to feed your Tamagotchi: ${e.toString()}',
       );
     }
   }
@@ -72,7 +110,7 @@ class TamagotchiViewModel extends BaseViewModel {
     } catch (e) {
       _dialogService.showDialog(
         title: 'Error',
-        description: 'Unable to play with your Tamagotchi. Please try again.',
+        description: 'Unable to play with your Tamagotchi: ${e.toString()}',
       );
     }
   }
@@ -84,8 +122,7 @@ class TamagotchiViewModel extends BaseViewModel {
     } catch (e) {
       _dialogService.showDialog(
         title: 'Error',
-        description:
-            'Unable to put your Tamagotchi to sleep. Please try again.',
+        description: 'Unable to put your Tamagotchi to sleep: ${e.toString()}',
       );
     }
   }
