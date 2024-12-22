@@ -15,40 +15,69 @@ class TamagotchiView extends StackedView<TamagotchiViewModel> {
     TamagotchiViewModel viewModel,
     Widget? child,
   ) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(viewModel.tamagotchiName ?? 'My Tamagotchi'),
-      ),
-      body: viewModel.hasTamagotchi
-          ? Column(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: TamagotchiAvatar(
-                    isHappy: viewModel.isHappy,
-                    isTired: viewModel.isTired,
-                    isHungry: viewModel.isHungry,
-                  ),
-                ),
-                const TamagotchiStats(),
-                verticalSpaceMedium,
-                const TamagotchiActions(),
-                verticalSpaceLarge,
-              ],
-            )
-          : Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('You don\'t have a Tamagotchi yet!'),
-                  verticalSpaceMedium,
-                  ElevatedButton(
-                    onPressed: viewModel.createNewTamagotchi,
-                    child: const Text('Create New Tamagotchi'),
-                  ),
-                ],
+    return WillPopScope(
+      onWillPop: () async {
+        viewModel.cancelPeriodicUpdate();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            viewModel.tamagotchiName ?? 'My Tamagotchi',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          elevation: 0,
+        ),
+        body: viewModel.isBusy
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : SafeArea(
+                child: viewModel.hasTamagotchi
+                    ? Column(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TamagotchiAvatar(
+                              isHappy: viewModel.isHappy,
+                              isTired: viewModel.isTired,
+                              isHungry: viewModel.isHungry,
+                            ),
+                          ),
+                          const TamagotchiStats(),
+                          verticalSpaceMedium,
+                          const TamagotchiActions(),
+                          verticalSpaceLarge,
+                        ],
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'You don\'t have a Tamagotchi yet!',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            verticalSpaceMedium,
+                            ElevatedButton(
+                              onPressed: viewModel.createNewTamagotchi,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                              ),
+                              child: const Text('Create New Tamagotchi'),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
-            ),
+      ),
     );
   }
 
@@ -59,5 +88,6 @@ class TamagotchiView extends StackedView<TamagotchiViewModel> {
   @override
   void onViewModelReady(TamagotchiViewModel viewModel) {
     viewModel.initialize();
+    super.onViewModelReady(viewModel);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/ui/common/app_colors.dart';
 
 class TamagotchiAvatar extends StatelessWidget {
   final bool isHappy;
@@ -22,9 +23,16 @@ class TamagotchiAvatar extends StatelessWidget {
           color: Colors.white,
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.black,
-            width: 2,
+            color: kcPrimaryColor,
+            width: 3,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: kcPrimaryColor.withOpacity(0.3),
+              blurRadius: 10,
+              spreadRadius: 5,
+            ),
+          ],
         ),
         child: Center(
           child: Text(
@@ -37,9 +45,9 @@ class TamagotchiAvatar extends StatelessWidget {
   }
 
   String _getEmoji() {
-    if (isHungry) return '🤤';
-    if (isTired) return '😴';
-    if (isHappy) return '😊';
-    return '😐';
+    if (isHungry) return '😋'; // Hungry
+    if (isTired) return '😴'; // Tired
+    if (isHappy) return '😊'; // Happy
+    return '😐'; // Neutral
   }
 }
