@@ -1,0 +1,1 @@
+After the "Create Your Tamagochi" screen on welcome view it is grey screen. please fix it
