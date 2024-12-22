@@ -1,35 +1,31 @@
-import 'package:my_app/app/app.bottomsheets.dart';
-import 'package:my_app/app/app.dialogs.dart';
 import 'package:my_app/app/app.locator.dart';
+import 'package:my_app/app/app.router.dart';
+import 'package:my_app/services/tamagotchi_service.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 class HomeViewModel extends BaseViewModel {
+  final _navigationService = locator<NavigationService>();
   final _dialogService = locator<DialogService>();
-  final _bottomSheetService = locator<BottomSheetService>();
+  final _tamagotchiService = locator<TamagotchiService>();
 
-  String get counterLabel => 'Counter is: $_counter';
+  bool get hasTamagotchi => _tamagotchiService.hasTamagotchi;
+  String? get tamagotchiName => _tamagotchiService.currentTamagotchi?.name;
 
-  int _counter = 0;
+  Future<void> createNewTamagotchi() async {
+    final dialogResponse = await _dialogService.showDialog(
+      title: 'Create Your Tamagotchi',
+      description: 'Would you like to create a new virtual pet?',
+      buttonTitle: 'Yes',
+      cancelTitle: 'No',
+    );
 
-  void incrementCounter() {
-    _counter++;
-    rebuildUi();
+    if (dialogResponse?.confirmed ?? false) {
+      await _navigationService.navigateToTamagotchiView();
+    }
   }
 
-  void showDialog() {
-    _dialogService.showCustomDialog(
-      variant: DialogType.infoAlert,
-      title: 'Steve Rocks!',
-      description: 'Give steve $_counter stars on Github',
-    );
-  }
-
-  void showBottomSheet() {
-    _bottomSheetService.showCustomSheet(
-      variant: BottomSheetType.notice,
-      title: 'title',
-      description: 'desc',
-    );
+  Future<void> goToTamagotchi() async {
+    await _navigationService.navigateToTamagotchiView();
   }
 }
