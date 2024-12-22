@@ -24,48 +24,37 @@ class HomeView extends StackedView<HomeViewModel> {
                 Column(
                   children: [
                     const Text(
-                      'Hello from STEVE x STACKED!',
+                      'Welcome to Tamagotchi',
                       style: TextStyle(
                         fontSize: 35,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     const Gap(25),
-                    MaterialButton(
-                      color: Colors.black,
-                      onPressed: viewModel.incrementCounter,
-                      child: Text(
-                        viewModel.counterLabel,
-                        style: const TextStyle(color: Colors.white),
+                    if (viewModel.hasTamagotchi) ...[
+                      Text(
+                        'Your pet ${viewModel.tamagotchiName} is waiting!',
+                        style: const TextStyle(fontSize: 20),
                       ),
-                    ),
+                      const Gap(16),
+                      ElevatedButton(
+                        onPressed: viewModel.goToTamagotchi,
+                        child: const Text('Visit Your Pet'),
+                      ),
+                    ] else ...[
+                      const Text(
+                        'Create your virtual pet!',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      const Gap(16),
+                      ElevatedButton(
+                        onPressed: viewModel.createNewTamagotchi,
+                        child: const Text('Get Started'),
+                      ),
+                    ],
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    MaterialButton(
-                      color: Colors.grey,
-                      onPressed: viewModel.showDialog,
-                      child: const Text(
-                        'Show Dialog',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    MaterialButton(
-                      color: Colors.grey,
-                      onPressed: viewModel.showBottomSheet,
-                      child: const Text(
-                        'Show Bottom Sheet',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                const Gap(50),
               ],
             ),
           ),
@@ -75,8 +64,5 @@ class HomeView extends StackedView<HomeViewModel> {
   }
 
   @override
-  HomeViewModel viewModelBuilder(
-    BuildContext context,
-  ) =>
-      HomeViewModel();
+  HomeViewModel viewModelBuilder(BuildContext context) => HomeViewModel();
 }
