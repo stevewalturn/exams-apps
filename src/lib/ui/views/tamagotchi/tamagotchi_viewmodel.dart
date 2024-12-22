@@ -47,6 +47,7 @@ class TamagotchiViewModel extends BaseViewModel {
 
     if (response?.confirmed ?? false) {
       notifyListeners();
+      await _navigationService.replaceWithTamagotchiView();
     } else {
       await _navigationService.replaceWithHomeView();
     }
